@@ -1,0 +1,1 @@
+pipenv run python data_extraction/scrape_publicholidays.py
