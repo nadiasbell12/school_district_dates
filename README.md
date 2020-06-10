@@ -30,6 +30,6 @@ COVID_school_district_analytics
 3. Create virtual environment using the requirements file.
 > pip install -r requirements.txt
 
-2. Create a new folder. Name it "output" (all lower case).
+4. Create a new folder. Name it "output" (all lower case).
 
-3. Indicate which states to process using States.yaml (simply comment out the state and its url)
+5. Indicate which states to process using States.yaml (simply comment out the state and its url)
