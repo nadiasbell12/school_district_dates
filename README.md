@@ -25,6 +25,9 @@ COVID_school_district_analytics
 1. Clone repo to your local machine:
 > git clone https://github.com/nadiasbell12/COVID_school_district_analytics.git
 
+Note: Make sure you have pipenv (https://pypi.org/project/pipenv/) installed. You can do that by running
+> pip install pipenv
+
 2. Navigate into src/
 
 3. Double click setup.sh - this will create the virtual environment, install requirements, and create a folder named 'output'.
