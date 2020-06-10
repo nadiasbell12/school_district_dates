@@ -27,11 +27,8 @@ COVID_school_district_analytics
 
 2. Navigate into src/
 
-3. Create virtual environment and install requirements.
-> pipenv run pip install -r requirements.txt
+3. Double click setup.sh - this will create the virtual environment, install requirements, and create a folder named 'output'.
 
-4. Create a new folder. Name it "output" (all lower case).
+4. Indicate which states to process using States.yaml (simply comment out the state and its url)
 
-5. Indicate which states to process using States.yaml (simply comment out the state and its url)
-
-6. Run by double clicking the run.sh program.
+5. Run scraping program by double clicking run.sh
