@@ -7,11 +7,6 @@ COVID_school_district_analytics
 |   .gitignore
 |   README.md
 |       
-+---output
-|       Alabama_School_Dates.xlsx
-|       Idaho_School_Dates.xlsx
-|       Nebraska_School_Dates.xlsx
-|       
 \---src
     |   chromedriver.exe
     |   debug.log
@@ -22,6 +17,9 @@ COVID_school_district_analytics
     \---data_extraction
             scrape_publicholidays.py
             States.yaml
+    \---output
+            Alabama_School_Dates.xlsx
+            etc.
 
 ## Directions
 1. Clone repo to your local machine:
