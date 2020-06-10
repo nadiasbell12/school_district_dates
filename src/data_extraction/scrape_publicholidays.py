@@ -1,8 +1,12 @@
+# package imports
 from selenium import webdriver
-import re, time
-from datetime import datetime
 import pandas as pd
 import numpy as np
+import yaml
+
+# python standard library
+import re, time
+from datetime import datetime
 
 def extract_links(driver, url):
     """[Get all the links from the table so we can navigate to each without having to go 'back']
@@ -46,8 +50,16 @@ def get_dates(driver, url):
 def main():
     driver = webdriver.Chrome()
     driver.implicitly_wait(10)
-    state_url_dict = extract_links(driver, "https://publicholidays.us/school-holidays/")
 
+    # this chunk was used to create States.yaml
+    # state_url_dict = extract_links(driver, "https://publicholidays.us/school-holidays/")
+    # with open('data_extraction/States.yaml', 'w') as f:
+    #     data = yaml.dump(state_url_dict, f)
+
+    # read in the yaml file to control which states to process
+    with open('data_extraction/States.yaml') as f:
+        state_url_dict = yaml.load(f, Loader=yaml.FullLoader)
+    
     for state, url in state_url_dict.items():
         # obtain dictionary with each district as the keys and urls for that district as the values
         district_url_dict = extract_links(driver, url[0])
