@@ -33,3 +33,5 @@ COVID_school_district_analytics
 4. Create a new folder. Name it "output" (all lower case).
 
 5. Indicate which states to process using States.yaml (simply comment out the state and its url)
+
+6. Run by double clicking the run.sh program.
