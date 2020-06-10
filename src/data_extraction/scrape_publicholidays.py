@@ -76,7 +76,7 @@ def main():
         # format into dataframe
         dates_df = pd.DataFrame.from_dict(district_url_dict, orient='index')
         dates_df.columns = ['url', 'startDate', 'endDate']
-        dates_df.to_excel(f'C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/output/{state}_School_Dates.xlsx')
+        dates_df.to_excel(f'output/{state}_School_Dates.xlsx')
     
     driver.close()
 
