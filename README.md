@@ -27,8 +27,8 @@ COVID_school_district_analytics
 
 2. Navigate into src/
 
-3. Create virtual environment using the requirements file.
-> pip install -r requirements.txt
+3. Create virtual environment and install requirements.
+> pipenv run pip install -r requirements.txt
 
 4. Create a new folder. Name it "output" (all lower case).
 
