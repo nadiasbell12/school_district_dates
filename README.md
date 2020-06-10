@@ -27,3 +27,4 @@ COVID_school_district_analytics
 
 2. Navigate into src and create a new folder. Name it "output" (all lower case).
 
+3. Indicate which states to process using States.yaml simply comment out the state and its url
