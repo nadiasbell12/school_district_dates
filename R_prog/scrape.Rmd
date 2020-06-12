@@ -1,0 +1,90 @@
+---
+title: "scrape_pdf"
+author: "Beau Smit"
+date: "6/12/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r imports}
+library(tabulizer)
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+library(xlsx)
+```
+
+
+```{r MD}
+pdf_path <- "C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/R_prog/MD_SchoolSystemOpeningClosingDates.pdf"
+pgs <- get_n_pages(pdf_path)
+MD_df <- extract_tables(pdf_path, pages = pgs, output="data.frame")[[1]]
+
+MD_out <- MD_df %>%
+  select(-starts_with("X")) %>%
+  mutate(startDate = str_extract(First..Day, '[[:alpha:]]{3,4} [0-9]{1,2}')) %>%
+  mutate(startDate = str_c('2019 ', startDate) %>%
+           ymd(.)) %>%
+  mutate(endDate = str_c('2020 ', Last.Day) %>% 
+           ymd(.))
+
+write.xlsx(MD_out, 'output/Maryland_School_Dates.xlsx', row.names = FALSE)
+```
+
+
+```{r SC}
+pdf_path <- "C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/R_prog/SC_2019-2020 Composite School Calendar.pdf"
+pgs <- get_n_pages(pdf_path)
+SC_char <- extract_tables(pdf_path, pages = 2:9, method = "stream", output = "data.frame")
+SC_char <- extract_text(pdf_path, pages = 2)
+
+SC_char_spl <- strsplit(SC_char, ' \r\n \r\n')[[1]]
+sample <- SC_char_spl[3:20]
+
+str_remove(SC_char_spl[[1]], "\r\n")
+```
+
+
+```{r WV}
+pdf_path <- "C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/R_prog/WV_Last-Day-of-Instruction-2019-2020-1.pdf"
+pgs <- get_n_pages(pdf_path)
+WV_df_in <- extract_tables(pdf_path, pages = pgs, method = "stream", output = "data.frame")[[1]]
+
+# remove first row
+WV_df <- WV_df_in[-1,]
+# split the columns and reshape
+WV_df1 <- WV_df[c(1, 2)] %>% rename(county = X, 
+                                   LastDay = Last.day.of.instruction)
+WV_df2 <- WV_df[c(3, 4)] %>% rename(county = X.1, 
+                                   LastDay = Last.day.of.instruction.1)
+WV_combined <- rbind(WV_df1, WV_df2)
+
+# format dates
+WV_combined_out <- WV_combined %>% 
+  mutate(endDate = mdy(LastDay)) %>%
+  drop_na(endDate) %>%
+  mutate(county = if_else(county %in% c('Traditional', 'Year-Round'), str_c('Kanawha ', county), county)) # one-off fix to strings
+
+write.xlsx(WV_combined_out, 'output/West_Virginia_School_Dates.xlsx', row.names = FALSE)
+```
+
+```{r VA}
+
+```
+
+```{r UT}
+
+```
+
+```{r}
+
+```
