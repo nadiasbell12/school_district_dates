@@ -1,2 +1,5 @@
 src/output/*
 src/debug.log
+
+R_prog/output/*
+R_prog/input/*
