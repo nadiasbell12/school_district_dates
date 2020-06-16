@@ -23,9 +23,8 @@ library(lubridate)
 library(xlsx)
 ```
 
-
 ```{r MD}
-pdf_path <- "C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/R_prog/MD_SchoolSystemOpeningClosingDates.pdf"
+pdf_path <- "C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/R_prog/input/MD_SchoolSystemOpeningClosingDates.pdf"
 pgs <- get_n_pages(pdf_path)
 MD_df <- extract_tables(pdf_path, pages = pgs, output="data.frame")[[1]]
 
@@ -40,9 +39,8 @@ MD_out <- MD_df %>%
 write.xlsx(MD_out, 'output/Maryland_School_Dates.xlsx', row.names = FALSE)
 ```
 
-
 ```{r SC}
-pdf_path <- "C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/R_prog/SC_2019-2020 Composite School Calendar.pdf"
+pdf_path <- "C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/R_prog/input/SC_2019-2020 Composite School Calendar.pdf"
 pgs <- get_n_pages(pdf_path)
 SC_char <- extract_tables(pdf_path, pages = 2:9, method = "stream", output = "data.frame")
 SC_char <- extract_text(pdf_path, pages = 2)
@@ -53,9 +51,8 @@ sample <- SC_char_spl[3:20]
 str_remove(SC_char_spl[[1]], "\r\n")
 ```
 
-
 ```{r WV}
-pdf_path <- "C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/R_prog/WV_Last-Day-of-Instruction-2019-2020-1.pdf"
+pdf_path <- "C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/R_prog/input/WV_Last-Day-of-Instruction-2019-2020-1.pdf"
 pgs <- get_n_pages(pdf_path)
 WV_df_in <- extract_tables(pdf_path, pages = pgs, method = "stream", output = "data.frame")[[1]]
 
@@ -78,13 +75,125 @@ write.xlsx(WV_combined_out, 'output/West_Virginia_School_Dates.xlsx', row.names 
 ```
 
 ```{r VA}
+pdf_path <- "C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/R_prog/input/VA_2019-2020-division-calendars.pdf"
+pgs <- get_n_pages(pdf_path)
+VA_df <- extract_tables(pdf_path, pages = 1:pgs, output="matrix")
 
+VA_df_combined <- rbind(VA_df[[1]], VA_df[[2]], VA_df[[3]], VA_df[[4]]) %>% as_tibble()
+names(VA_df_combined) <- VA_df_combined[1,]
+VA_df_combined_clean <- VA_df_combined[-1,]
+
+VA_df_out <- VA_df_combined_clean %>% 
+  mutate(startDate = str_replace_all(.$"Opening Date", "/", "-") %>% mdy()) %>%
+  mutate(endDate = str_replace_all(.$"Closing Date", "/", "-") %>% mdy())
+
+write.xlsx(VA_df_out, 'output/Virginia_School_Dates.xlsx')
 ```
 
-```{r UT}
+```{r UT charter}
+pdf_path <- "C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/R_prog/input/UT_charter_2019Charter.pdf"
+pgs <- get_n_pages(pdf_path)
+UT_df <- extract_tables(pdf_path, pages = 1, method = "stream", output="data.frame")[[1]]
 
+UT_df %>%
+  as_tibble() %>%
+  # drop_na(endDate) %>%
+  select(-starts_with("X")) %>%
+  mutate(startDate = str_extract(First..Day, '[[:alpha:]]{3,4} [0-9]{1,2}')) %>%
+  mutate(startDate = str_c('2019 ', startDate) %>%
+           ymd(.)) %>%
+
+extract_tables(pdf_path, pages = 2, output="matrix")
+rbind(UT_df[[1]], UT_df[[2]])
 ```
 
-```{r}
+```{r UT public}
+pdf_path <- "C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/R_prog/input/UT_public_2019District.pdf"
+pgs <- get_n_pages(pdf_path)
+UT_df <- extract_tables(pdf_path, pages = 1, method = "stream", output="data.frame")[[1]]
 
+
+UT_df_clean <- UT_df %>%
+  as_tibble() %>%
+  select(-starts_with("X")) %>%
+  mutate(DAY = if_else(grepl('^May ', SCHOOL.OTHER.NONSCHOOL.DAYSDISTRICT.INSTITUTE.OPENING), str_extract(SCHOOL.OTHER.NONSCHOOL.DAYSDISTRICT.INSTITUTE.OPENING, 'May [0-9]{1,2}'), DAY)) %>%
+  
+  mutate(School_District = str_extract(SCHOOL.OTHER.NONSCHOOL.DAYSDISTRICT.INSTITUTE.OPENING, '[A-Z]{2,30}( [A-Z]{2,30})?')) %>%
+  mutate(startDate = str_extract(LAST.FIRST.DAY.FALL.RECESS, 'August [0-9]{1,2}') %>%
+           str_c('2019 ', .) %>%
+           ymd()) %>%
+  mutate(endDate = str_c('2020 ', DAY) %>%
+           ymd()) %>%
+  select(School_District, startDate, endDate) %>%
+  drop_na()
+
+write.xlsx(UT_df_out, 'output/Utah_School_Dates.xlsx')
+```
+
+```{r DE}
+pdf_path <- "C:/Users/bsmit/Projects/COVID/COVID_school_district_analytics/R_prog/input/DE_calendar_2019-2020_school_district.pdf"
+pgs <- get_n_pages(pdf_path)
+DE_dfs <- extract_tables(pdf_path, pages = 3:pgs, output="matrix")
+
+format <- function(df) {
+  month <- str_extract(df[1,1], '[[:alpha:]]{3}')
+  df <- df %>% as_tibble()
+  df <- df[-1,]
+  
+  names(df) <- df[1,] %>% str_c(month, '_', .)
+  df_clean <- df[-1,]
+  return(df_clean)
+}
+
+# All first days in August or September
+Aug <- format(DE_dfs[[1]])
+Sep <- format(DE_dfs[[2]])
+
+# All last days in May or June
+May <- format(DE_dfs[[10]])
+Jun <- format(DE_dfs[[11]])
+
+DE_df_combined <- cbind(Aug, Sep, May, Jun)
+# 
+# which('LPD' == DE_df_combined, arr.ind=TRUE)
+# which(grepl('LPD', DE_df_combined), arr.ind=TRUE)
+
+first_dates <- c()
+for (i in 1:nrow(DE_df_combined)){
+  row <- DE_df_combined[i,]
+  matches <- grep('FPD', row, value=TRUE)
+  date <- names(matches[length(matches)]) # TODO: should I grab the first one or last?
+  if (length(date) == 0) {
+    first_dates <- c(first_dates, "")
+  } else {
+  first_dates <- c(first_dates, date)
+  }
+}
+
+last_dates <- c()
+for (i in 1:nrow(DE_df_combined)){
+  row <- DE_df_combined[i,]
+  matches <- grep('LPD', row, value=TRUE)
+  date <- names(matches[length(matches)])
+  if (length(date) == 0) {
+    last_dates <- c(last_dates, "")
+  } else {
+  last_dates <- c(last_dates, date)
+  }
+}
+
+DE_df_combined['AUG_School District']
+DE_df_combined['first_day'] = data.frame(first_dates)
+DE_df_combined['last_day'] = data.frame(last_dates)
+
+DE_df_out <- DE_df_combined %>%
+  mutate(startDate = str_c(first_day, ' 2019') %>% 
+           gsub('_', ' ', .) %>%
+           mdy()) %>%
+  mutate(endDate = str_c(last_day, ' 2020') %>% 
+           gsub('_', ' ', .) %>%
+           mdy())
+
+
+write.xlsx(DE_df_out, 'output/Deleware_School_Dates.xlsx')
 ```
